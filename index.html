@@ -1,0 +1,343 @@
+<!doctype html>
+<html class="dark" lang="en">
+    <head>
+        <meta charset="utf-8" />
+        <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+        <title>SEISMIC COMMAND ALPHA</title>
+        <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+        <link
+            href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
+            rel="stylesheet"
+        />
+        <link
+            href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Inter:wght@400;600&display=swap"
+            rel="stylesheet"
+        />
+        <script id="tailwind-config">
+            tailwind.config = {
+                darkMode: "class",
+                theme: {
+                    extend: {
+                        colors: {
+                            "on-background": "#e5e2e2",
+                            "surface-dim": "#131314",
+                            "on-surface-variant": "#c6c6cb",
+                            "outline-variant": "#45474b",
+                            "on-surface": "#e5e2e2",
+                            secondary: "#c2c6d4",
+                            surface: "#131314",
+                            "surface-variant": "#353435",
+                            "surface-container-lowest": "#0e0e0f",
+                            error: "#ffb4ab",
+                            "surface-container-highest": "#353435",
+                            "surface-container-high": "#2a2a2a",
+                            background: "#131314",
+                        },
+                        spacing: {
+                            unit: "4px",
+                            "margin-sm": "12px",
+                            "margin-md": "24px",
+                            gutter: "16px",
+                            "panel-padding": "20px",
+                        },
+                    },
+                },
+            };
+        </script>
+        <style>
+            body {
+                font-family: "Inter", sans-serif;
+            }
+            .font-code-sm,
+            .font-label-caps,
+            .font-display-lg {
+                font-family: "JetBrains Mono", monospace;
+            }
+
+            .glass-panel {
+                background-color: rgba(32, 31, 32, 0.8);
+                backdrop-filter: blur(20px);
+                border: 1px solid rgba(69, 71, 75, 0.5);
+            }
+
+            .status-glow-normal {
+                box-shadow: 0 0 12px rgba(16, 185, 129, 0.6);
+                border-color: rgba(16, 185, 129, 0.5);
+            }
+
+            .status-glow-emergency {
+                box-shadow: 0 0 24px rgba(255, 180, 171, 0.8);
+                border-color: rgba(255, 180, 171, 0.8);
+                background-color: rgba(147, 0, 10, 0.1) !important;
+            }
+
+            .led-normal {
+                background-color: #10b981;
+                box-shadow: 0 0 8px #10b981;
+            }
+            .led-emergency {
+                background-color: #ffb4ab;
+                box-shadow: 0 0 8px #ffb4ab;
+            }
+
+            @keyframes emergencyFlash {
+                0% {
+                    background-color: rgba(147, 0, 10, 0.05);
+                }
+                50% {
+                    background-color: rgba(147, 0, 10, 0.2);
+                }
+                100% {
+                    background-color: rgba(147, 0, 10, 0.05);
+                }
+            }
+
+            .flash-active {
+                animation: emergencyFlash 1s infinite;
+            }
+
+            .scan-line {
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 2px;
+                background: rgba(196, 198, 207, 0.1);
+                animation: scan 8s linear infinite;
+                pointer-events: none;
+                z-index: 100;
+            }
+
+            @keyframes scan {
+                0% {
+                    transform: translateY(-100%);
+                }
+                100% {
+                    transform: translateY(100vh);
+                }
+            }
+
+            ::-webkit-scrollbar {
+                width: 6px;
+                height: 6px;
+            }
+            ::-webkit-scrollbar-track {
+                background: transparent;
+            }
+            ::-webkit-scrollbar-thumb {
+                background: #45474b;
+                border-radius: 3px;
+            }
+        </style>
+    </head>
+    <body
+        class="bg-background text-on-background min-h-screen flex flex-col overflow-hidden relative"
+    >
+        <div class="scan-line"></div>
+
+        <header
+            class="fixed top-0 w-full z-50 flex justify-between items-center px-margin-md h-16 bg-surface-dim/80 backdrop-blur-md border-b border-outline-variant shadow-sm text-primary"
+        >
+            <div class="flex items-center gap-gutter">
+                <h1 class="font-display-lg text-2xl tracking-tighter">
+                    SEISMIC COMMAND ALPHA
+                </h1>
+            </div>
+            <div class="flex items-center gap-gutter">
+                <div class="flex items-center gap-2 px-unit">
+                    <span
+                        class="w-2 h-2 rounded-full led-normal"
+                        id="header-status-led"
+                    ></span>
+                    <span
+                        class="font-label-caps text-xs text-secondary"
+                        id="header-status-text"
+                        >CONNECTED</span
+                    >
+                </div>
+                <span
+                    class="font-code-sm text-sm text-secondary hidden md:block"
+                    id="system-time"
+                    >00:00:00 UTC</span
+                >
+            </div>
+        </header>
+
+        <main
+            class="flex-grow pt-24 pb-20 px-margin-md flex flex-col items-center justify-center gap-margin-md w-full max-w-7xl mx-auto relative z-10 transition-colors duration-500"
+            id="main-canvas"
+        >
+            <div
+                class="w-full max-w-4xl glass-panel rounded-lg p-panel-padding flex flex-col items-center justify-center text-center transition-all duration-300 status-glow-normal"
+                id="status-container"
+            >
+                <span
+                    class="font-label-caps text-xs text-on-surface-variant mb-margin-sm tracking-widest"
+                    >GLOBAL SEISMIC ARRAY STATUS</span
+                >
+                <div class="flex flex-col items-center gap-margin-sm py-12">
+                    <span
+                        class="material-symbols-outlined text-6xl text-emerald-400 mb-unit transition-colors duration-300"
+                        id="status-icon"
+                        style="font-variation-settings: &quot;FILL&quot; 1"
+                        >check_circle</span
+                    >
+                    <h2
+                        class="font-display-lg text-4xl text-on-surface tracking-tighter uppercase mt-4"
+                        id="status-message"
+                    >
+                        SYSTEM NORMAL: ALL CLEAR
+                    </h2>
+                </div>
+            </div>
+
+            <div
+                class="w-full max-w-4xl glass-panel rounded-lg flex flex-col overflow-hidden h-64 mt-margin-md border-t border-outline-variant"
+            >
+                <div
+                    class="bg-surface-container-high px-panel-padding py-margin-sm flex justify-between items-center border-b border-outline-variant sticky top-0 z-10"
+                >
+                    <span class="font-label-caps text-xs text-primary"
+                        >SYSTEM EVENT LOG</span
+                    >
+                    <span class="font-code-sm text-xs text-emerald-400"
+                        >LIVE POLLING ACTIVE</span
+                    >
+                </div>
+                <div class="overflow-y-auto flex-grow p-1">
+                    <table class="w-full text-left border-collapse">
+                        <tbody
+                            class="font-code-sm text-sm"
+                            id="log-body"
+                        ></tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+
+        <script>
+            // System Clock
+            function updateClock() {
+                const now = new Date();
+                document.getElementById("system-time").textContent =
+                    now.toISOString().substring(11, 19) + " UTC";
+            }
+            setInterval(updateClock, 1000);
+            updateClock();
+
+            // --- VERCEL BACKEND INTEGRATION ---
+
+            // Because the HTML and Python are hosted on Vercel together, we just use the relative route!
+            const API_URL = "/api/status";
+
+            let isEmergency = false;
+            let previousState = null;
+
+            const mainCanvas = document.getElementById("main-canvas");
+            const statusContainer = document.getElementById("status-container");
+            const statusIcon = document.getElementById("status-icon");
+            const statusMessage = document.getElementById("status-message");
+            const headerStatusLed =
+                document.getElementById("header-status-led");
+            const headerStatusText =
+                document.getElementById("header-status-text");
+            const logBody = document.getElementById("log-body");
+
+            async function fetchSystemStatus() {
+                try {
+                    const response = await fetch(API_URL);
+                    if (!response.ok)
+                        throw new Error("Network response was not ok");
+
+                    const data = await response.json();
+                    const currentAlarmState =
+                        data.alarm === "True" || data.alarm === true;
+
+                    if (currentAlarmState !== previousState) {
+                        isEmergency = currentAlarmState;
+                        updateUIState();
+                        addLogEntry();
+                        previousState = currentAlarmState;
+                    }
+                } catch (error) {
+                    console.error("API Error:", error);
+                }
+            }
+
+            function updateUIState() {
+                if (isEmergency) {
+                    mainCanvas.classList.add("flash-active");
+                    statusContainer.classList.remove("status-glow-normal");
+                    statusContainer.classList.add("status-glow-emergency");
+                    statusIcon.textContent = "warning";
+                    statusIcon.classList.remove("text-emerald-400");
+                    statusIcon.classList.add("text-error");
+                    statusMessage.textContent = "EMERGENCY SHUTDOWN INITIATED";
+                    statusMessage.classList.remove("text-on-surface");
+                    statusMessage.classList.add("text-error");
+                    headerStatusLed.classList.remove("led-normal");
+                    headerStatusLed.classList.add("led-emergency");
+                    headerStatusText.textContent = "CRITICAL";
+                    headerStatusText.classList.remove("text-secondary");
+                    headerStatusText.classList.add("text-error");
+                } else {
+                    mainCanvas.classList.remove("flash-active");
+                    statusContainer.classList.remove("status-glow-emergency");
+                    statusContainer.classList.add("status-glow-normal");
+                    statusIcon.textContent = "check_circle";
+                    statusIcon.classList.remove("text-error");
+                    statusIcon.classList.add("text-emerald-400");
+                    statusMessage.textContent = "SYSTEM NORMAL: ALL CLEAR";
+                    statusMessage.classList.remove("text-error");
+                    statusMessage.classList.add("text-on-surface");
+                    headerStatusLed.classList.remove("led-emergency");
+                    headerStatusLed.classList.add("led-normal");
+                    headerStatusText.textContent = "CONNECTED";
+                    headerStatusText.classList.remove("text-error");
+                    headerStatusText.classList.add("text-secondary");
+                }
+            }
+
+            function addLogEntry() {
+                if (previousState === null && !isEmergency) return;
+
+                const now = new Date();
+                const timeString = now
+                    .toISOString()
+                    .substring(0, 19)
+                    .replace("T", " ");
+                const tr = document.createElement("tr");
+
+                tr.className = `hover:bg-surface-variant transition-colors border-b border-outline-variant/30 ${isEmergency ? "text-error" : ""}`;
+
+                let eventName = isEmergency
+                    ? "CRITICAL: Manual Override Push-Button Triggered"
+                    : "System Restored - Protocols Nominal";
+                let statusText = isEmergency ? "EMERGENCY" : "RECOVERED";
+                let statusClass = isEmergency
+                    ? "font-medium"
+                    : "text-emerald-400";
+
+                if (isEmergency)
+                    tr.classList.add(
+                        "font-medium",
+                        "bg-surface-container-highest/20",
+                    );
+
+                tr.innerHTML = `
+                <td class="py-3 px-margin-sm ${isEmergency ? "" : "text-secondary"}">${timeString}</td>
+                <td class="py-3 px-margin-sm ${isEmergency ? "" : "text-on-surface"}">${eventName}</td>
+                <td class="py-3 px-margin-sm text-right ${statusClass}">${statusText}</td>
+            `;
+
+                logBody.insertBefore(tr, logBody.firstChild);
+                if (logBody.children.length > 10)
+                    logBody.removeChild(logBody.lastChild);
+            }
+
+            // Poll Vercel backend every 2 seconds
+            setInterval(fetchSystemStatus, 2000);
+            fetchSystemStatus();
+        </script>
+    </body>
+</html>
