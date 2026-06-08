@@ -25,6 +25,12 @@ class handler(BaseHTTPRequestHandler):
             self.send_response(200)
             self.send_header("Content-type", "application/json")
             self.send_header("Access-Control-Allow-Origin", "*")
+
+            # --- CRITICAL FIX: Tell Vercel NEVER to cache this API response ---
+            self.send_header(
+                "Cache-Control", "no-store, no-cache, must-revalidate, max-age=0"
+            )
+
             self.end_headers()
             self.wfile.write(json.dumps({"alarm": alarm_status}).encode("utf-8"))
 
@@ -32,6 +38,10 @@ class handler(BaseHTTPRequestHandler):
             # If database fails, return an error state safely
             self.send_response(500)
             self.send_header("Content-type", "application/json")
+            self.send_header("Access-Control-Allow-Origin", "*")
+            self.send_header(
+                "Cache-Control", "no-store, no-cache, must-revalidate, max-age=0"
+            )
             self.end_headers()
             self.wfile.write(
                 json.dumps({"alarm": "False", "error": str(e)}).encode("utf-8")

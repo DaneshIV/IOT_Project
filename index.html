@@ -91,7 +91,6 @@
                     background-color: rgba(147, 0, 10, 0.05);
                 }
             }
-
             .flash-active {
                 animation: emergencyFlash 1s infinite;
             }
@@ -225,9 +224,7 @@
             setInterval(updateClock, 1000);
             updateClock();
 
-            // --- VERCEL BACKEND INTEGRATION ---
-
-            // Because the HTML and Python are hosted on Vercel together, we just use the relative route!
+            // VERCEL BACKEND ROUTE
             const API_URL = "/api/status";
 
             let isEmergency = false;
@@ -245,7 +242,11 @@
 
             async function fetchSystemStatus() {
                 try {
-                    const response = await fetch(API_URL);
+                    // --- CRITICAL FIX: Tell the browser NEVER to cache this request ---
+                    const response = await fetch(API_URL, {
+                        cache: "no-store",
+                    });
+
                     if (!response.ok)
                         throw new Error("Network response was not ok");
 
@@ -328,7 +329,7 @@
                 <td class="py-3 px-margin-sm ${isEmergency ? "" : "text-secondary"}">${timeString}</td>
                 <td class="py-3 px-margin-sm ${isEmergency ? "" : "text-on-surface"}">${eventName}</td>
                 <td class="py-3 px-margin-sm text-right ${statusClass}">${statusText}</td>
-            `;
+                `;
 
                 logBody.insertBefore(tr, logBody.firstChild);
                 if (logBody.children.length > 10)
