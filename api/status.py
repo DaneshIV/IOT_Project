@@ -4,7 +4,7 @@ from http.server import BaseHTTPRequestHandler
 from pymongo import MongoClient
 
 # Your MongoDB Connection String
-MongoURI = "mongodb+srv://maiSakura:<daneshmuthu>@iotadmin.qhxngyt.mongodb.net/?retryWrites=true&w=majority&appName=iotadmin"
+MongoURI = "mongodb+srv://maiSakura:daneshmuthu@iotadmin.qhxngyt.mongodb.net/?retryWrites=true&w=majority&appName=iotadmin"
 
 
 class handler(BaseHTTPRequestHandler):
